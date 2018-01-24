@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+  <title>doublemana // plume</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <!--<link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">-->
+
+  <!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/skeleton.css">
+
+  <!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="icon" type="image/png" href="images/favicon.png">
+    <style type="text/css">
+        body {
+            padding-top: 40px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: "Georgia", "Times New Roman", Helvetica, Arial, sans-serif;
+        }
+        #nav {
+            margin: 15px 0 0 0;
+        }
+        #nav ul li {
+            display: inline;
+            margin: 0 20px 0 0;
+            margin-bottom: 130px;
+        }
+
+        #nav a {
+            text-decoration: none;
+            color: #333;
+            outline: 0;
+        }
+
+        #nav a:hover {
+             text-decoration: underline;
+        }
+
+        #glyphs {
+            padding: 15rem 0 15rem 0;
+        }
+
+        /* iPad Portrait/Browser */
+        @media only screen and (min-width: 768px) and (max-width: 991px) {
+            #nav ul li {
+                margin-left: 15px;
+            }
+        }
+
+        /* Mobile/Browser */
+        @media only screen and (max-width: 767px) {
+            h2 {
+                font-size: 2em;
+                margin-bottom: 0;
+            }
+
+            #nav ul li {
+                margin-right: 15px;
+                margin-left: 0;
+            }
+
+            #glyphs img {
+                max-height:100px;
+                max-width:100px;
+            }
+            #glyphs {
+                padding: 5rem 0 5rem 0;
+            }
+        }
+
+        /* Mobile Landscape/Browser */
+        @media only screen and (min-width: 480px) and (max-width: 767px) {
+        }
+
+        /* Anything smaller than standard 960 */
+        @media only screen and (max-width: 959px) {
+
+        }
+
+        /* iPad Portrait Only */
+        @media only screen and (min-width: 768px) and (max-width: 991px) and (max-device-width: 1000px) {
+        }
+
+        /* Mobile Only */
+        @media only screen and (max-width: 767px) and (max-device-width: 1000px) {
+
+        }
+
+        /* Mobile Landscape Only */
+        @media only screen and (min-width: 480px) and (max-width: 767px) and (max-device-width: 1000px) {
+        }
+
+	body { height: 100%; }
+	.columns, .container, .row { height: 100%; }
+	.left { height: auto; }
+	#editor textarea {
+		height: 100%;
+		margin: 0 auto;
+		border: 1px solid blue;
+		width: 100%;
+		display: block;
+	}
+	#editor {
+		height: 100%;
+	}
+	.container {
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		padding: 50px 0 50px 0; 
+	}
+	.plume {
+		font-size: 3rem;
+		font-style: italic;
+	}
+    </style>
+</head>
+<body ondrop="drop_handler(event);" ondragover="dragover_handler(event);" ondragend="dragend_handler(event);">
+    <div class="container">
+        <div class="row">
+            <div class="three columns left">
+                <h4 class="plume">~ plume</h4>
+                <div id="links">
+					<h6>exemple</h6>
+                	<h5>exemple</h5>
+                </div>
+            </div>
+            <div id="editor" class="nine columns">
+                <textarea></textarea>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="jquery.splendid.textchange.js"></script>
+    <script src="jquery.caret.js"></script>
+    <script src="FileSaver.js"></script>
+    <script>
+		var plume = {};
+		plume.editor = $('#editor textarea');
+		plume.links = $('#links');
+		plume.lines = [];
+		plume.updateLinks = function() {
+			var resetDone = false;
+			var position = 0;
+			plume.lines = plume.editor.val().split('\n');
+			$.each(plume.lines, function( index, value ) {
+				position += value.length + 1; // +1 => add \r\n
+			  	if (value.startsWith('#')) {
+					if(!resetDone) {
+						plume.links.html('');
+						resetDone = true;
+					}
+					if (value.startsWith('##')) {
+						plume.links.append('<h6 class="plumelink">' + value.replace('##', '') + '</h6>');
+					} else {
+						plume.links.append('<h5 class="plumelink">' + value.replace('#', '') + '</h5>');
+					}
+					if ($('.plumelink').length > 0) {
+						$('.plumelink:last').data('plumepos', position);
+						
+					}
+				 }			 
+			});
+		};
+
+		// main bindings
+		$(plume.editor).on('keyup', function(e) {
+			if (e.keyCode == 13) plume.updateLinks();
+    	});
+		$('#links').on('click', '.plumelink', function() {
+			plume.editor.caretTo($(this).data('plumepos') - 1);
+			plume.editor.blur(); // dirty trick to scroll to the caret pos
+			plume.editor.focus();
+		});
+
+		$(window).bind('keydown', function(event) {
+			if (event.ctrlKey || event.metaKey) {
+				switch (String.fromCharCode(event.which).toLowerCase()) {
+				case 's':
+					event.preventDefault();
+					//var file = new File([plume.editor.val()], "hello world.txt", {type: "text/plain;charset=utf-8"});
+					//saveAs(file);
+					var txt = '';
+					// must reconstruct the whole file to keep line breaks !
+					$.each(plume.lines, function( index, value ) {
+						txt += value + '\r\n';
+					});
+					download('plume.txt', txt);
+					break;
+				}
+			}
+		});
+		//init
+		$(document).ready(plume.editor.focus());
+
+		// D&D
+		function drop_handler(ev) {
+		  console.log("Drop");
+		  ev.preventDefault();
+		  var files = ev.target.files || ev.dataTransfer.files;
+		  if (files[0].type.indexOf('text') == 0)
+		  {
+			var reader = new FileReader();
+			reader.onload = function(e) {
+				var text = e.target.result;
+				plume.editor.val(text);
+				plume.updateLinks();
+			}
+			reader.readAsText(files[0]);
+		  } else {
+		   	alert('You can only drop text files');
+		  }
+  		}
+
+  		function dragover_handler(ev) {
+  			ev.preventDefault();
+  		}
+
+  		function dragend_handler(ev) {
+  			  var dt = ev.dataTransfer;
+			  if (dt.items) {
+				// Use DataTransferItemList interface to remove the drag data
+				for (var i = 0; i < dt.items.length; i++) {
+				  dt.items.remove(i);
+				}
+			  } else {
+				// Use DataTransfer interface to remove the drag data
+				ev.dataTransfer.clearData();
+			  }
+  		}
+
+  		function download(filename, text) {
+			var pom = document.createElement('a');
+			pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+			pom.setAttribute('download', filename);
+
+			if (document.createEvent) {
+				var event = document.createEvent('MouseEvents');
+				event.initEvent('click', true, true);
+				pom.dispatchEvent(event);
+			}
+			else {
+				pom.click();
+			}
+		}
+    </script>
+</body>
+</html>
